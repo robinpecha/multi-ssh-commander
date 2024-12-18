@@ -5,8 +5,14 @@ Python script with a web interface.
 
 ![screenshot](screenshot.png)
 
-# How to start in docker (linux)
+# How to start in Docker
+```
+docker run robinpecha/dockerhub:multisshcommander
+```
+Then open http://localhost:8080/ in your browser
 
+
+# Download script to modify it and then run in Docker (Linux)
 1. Clone / download this repo
 
 ```
