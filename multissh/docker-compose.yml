@@ -1,8 +1,8 @@
-name: multissh-webui
+name: multisshcommander
 services:
-  multissh-webui:
-    container_name: multissh-webui
-    image: multissh-webui
+  multisshcommander:
+    container_name: multisshcommander
+    image: multisshcommander
     build: .
     ports:
       - "8080:8080"
