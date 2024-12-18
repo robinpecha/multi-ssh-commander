@@ -1,0 +1,8 @@
+name: multissh-webui
+services:
+  multissh-webui:
+    container_name: multissh-webui
+    image: multissh-webui
+    build: .
+    ports:
+      - "8080:8080"

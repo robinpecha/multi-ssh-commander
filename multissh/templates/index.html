@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MULTI SSH COMMANDER - WEB UI</title>
+    <link rel="stylesheet" href="/static/styles.css">
+
+</head>
+<body>
+    <div class="form-container">
+        <div class="toggle-buttons">
+            <button class="toggle-button" onclick="toggleLog()">Show Logs</button>
+            <button class="refresh-button" onclick="refreshLogContent()">Refresh Logs</button>
+            <button class="refresh-button" onclick="window.open('/static/log.txt', '_blank');">Open log file</button>
+        </div>
+        <form method="POST" class="form">
+            <h1 class="header">MULTI SSH COMMANDER - WEB UI</h1>
+            <label for="username">SSH username:</label>
+            <input type="text" id="username" name="username" value="{{ form_data.username }}" required><br>
+            
+            <label for="password">SSH password:</label>
+            <input type="password" id="password" name="password" value="{{ form_data.password }}" required><br>
+            
+            <label for="port">SSH port:</label>
+            <input type="number" id="port" name="port" value="{{ form_data.port }}" required><br>
+            
+            <label for="timeout">Connection timeout (seconds):</label>
+            <input type="number" id="timeout" name="timeout" value="{{ form_data.timeout }}" required min="1" max="300"><br>
+            
+            <label for="command">Commands:</label>
+            <textarea id="command" name="command" rows="5" required>{{ form_data.command }}</textarea><br>
+
+            <label for="ips">SSH HOSTS (IPs or hostnames, one per line):</label><br>
+            <textarea id="ips" name="ips" rows="5" required>{{ form_data.ips }}</textarea><br>
+            
+            <input type="submit" value="Run !">
+        </form>
+        
+        <h2 class="results-header" style="display:none;">Results:</h2>
+        <table class="results-table" style="display:none;">
+            <thead>
+                <tr>
+                    <th class="ip">HOST</th>
+                    <th class="response">RESPONSE<br>in seconds</th>
+                    <th>OUTPUT / ERROR</th>
+                </tr>
+            </thead>
+            <tbody id="results-body">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="log-container" id="logContainer">
+        <h2>Log File Content:</h2>
+        <pre id="logContent"></pre>
+    </div>
+
+    <script>
+        function toggleLog() {
+            const logContainer = document.getElementById('logContainer');
+            if (logContainer.style.display === 'none' || logContainer.style.display === '') {
+                logContainer.style.display = 'block';
+                fetchLogContent();
+            } else {
+                logContainer.style.display = 'none';
+            }
+        }
+
+        function refreshLogContent() {
+            fetchLogContent();
+        }
+
+        function fetchLogContent() {
+            fetch('/static/log.txt')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('logContent').textContent = data;
+                })
+                .catch(error => console.error('Error fetching log file:', error));
+        }
+
+        document.querySelector('form').onsubmit = function(e) {
+            e.preventDefault();
+            document.querySelector('.results-header').style.display = 'block';
+            document.querySelector('.results-table').style.display = 'table';
+            document.getElementById('results-body').innerHTML = '';
+            
+            // Submit form data
+            const formData = new FormData(this);
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            }).then(() => {
+                // Automatically refresh log content after each connection
+                refreshLogContent();
+                // Add an empty line to the log file after each successful connection
+                appendEmptyLineToLog();
+            });
+
+            // Start listening for results
+            const eventSource = new EventSource('/stream');
+            eventSource.onmessage = function(e) {
+                const result = JSON.parse(e.data);
+                const row = document.createElement('tr');
+                row.className = result.error ? 'error-row' : '';
+                
+                if (result.completed) {
+                    const completedRow = document.createElement('tr');
+                    completedRow.innerHTML = `<td class="footer" colspan="3">All connections completed.</td>`;
+                    document.getElementById('results-body').appendChild(completedRow);
+                    eventSource.close(); // Close the event source after completion
+                } else {
+                    row.innerHTML = `
+                        <td class="ip">${result.ip}</td>
+                        <td class="response">${result.response !== null ? result.response : 'N/A'}</td>
+                        <td class="${result.error ? 'error' : ''}">
+                            <pre>${result.error || result.output}</pre>
+                        </td>
+                    `;
+                    document.getElementById('results-body').appendChild(row);
+                }
+            };
+
+            eventSource.onerror = function() {
+                eventSource.close();
+            };
+        };
+
+
+    </script>
+</body>
+</html>
