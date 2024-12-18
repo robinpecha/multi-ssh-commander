@@ -7,7 +7,7 @@ Python script with a web interface.
 
 # How to start in Docker
 ```
-docker run robinpecha/dockerhub:multisshcommander
+docker run -d --name multisshcommander -p 8000:8080 robinpecha/dockerhub:multisshcommander
 ```
 Then open http://localhost:8080/ in your browser
 
