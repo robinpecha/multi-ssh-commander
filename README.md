@@ -35,17 +35,19 @@ rm main.zip
 cd multi-ssh-commander
 ```
 
-3. Run script or start container
+3. Start container or run script localy
 
-To start script localy, install requirements and run script:
-```
-pip install --no-cache-dir -r requirements.txt
-python multisshcommander.py
-```
 
 Or start docker container with app:
 ```
 docker compose up -d
+```
+
+To start script localy, install requirements and run script:
+CAUTION, this was not really tested, take care about known_hosts and user rights by yourself!
+```
+pip install --no-cache-dir -r requirements.txt
+python multisshcommander.py
 ```
 
 4. Open http://localhost:8080/ in your browser
