@@ -11,7 +11,7 @@ Demo at: https://multi-ssh-commander.fly.dev
 # Start in Docker from dockerhub
 
 ```
-docker run -d --name multisshcommander -p 8000:8080 robinpecha/dockerhub:multisshcommander
+docker run -d --name multisshcommander -p 8080:8080 robinpecha/dockerhub:multisshcommander
 ```
 
 Then open http://localhost:8080/ in your browser
