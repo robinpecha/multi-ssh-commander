@@ -99,12 +99,12 @@ th {
 
 .ip {
   text-align: center;
-  max-width: 30px;
+  width: 40px;
 }
 
 .response {
   text-align: center;
-  max-width: 30px;
+  max-width: 40px;
 }
 
 /* Utility Classes */
