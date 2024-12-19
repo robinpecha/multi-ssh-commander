@@ -3,6 +3,9 @@
 A tool that allows you to run commands sequentially on specified ssh targets.
 Python script with a web interface.
 
+Demo at: https://multi-ssh-commander.fly.dev  
+**!!! ALL IPS ARE STORED IN PUBLICLY ACCESSIBLE LOG, DO NOT USE FOR REAL CONNECTIONS, USE AT YOUR OWN RISK !!!**
+
 ![screenshot](screenshot.png)
 
 # Start in Docker from dockerhub
