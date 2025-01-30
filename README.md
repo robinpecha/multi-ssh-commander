@@ -1,18 +1,19 @@
 # multi-ssh-commander
+A tool that allows you to run commands sequentially on specified ssh targets. Simple python script with a web interface.
 
-A tool that allows you to run commands sequentially on specified ssh targets.
-Python script with a web interface.
 
-~~Demo at: https://multi-ssh-commander.fly.dev~~
+**This is just an unstable development version, you use your own risk.**
+>I strongly recommend opening a side panel with logs and finding out what happens, HTML listing at the bottom can be not accurate.
 
-~~!!! ALL IPS ARE STORED IN PUBLICLY ACCESSIBLE LOG, DO NOT USE FOR REAL CONNECTIONS, USE AT YOUR OWN RISK !!!~~
+
+<!-- Demo at: https://multi-ssh-commander.fly.dev !!! ALL IPS ARE STORED IN PUBLICLY ACCESSIBLE LOG, DO NOT USE FOR REAL CONNECTIONS, USE AT YOUR OWN RISK !!! --!>
 
 ![screenshot](screenshot.png)
 
 # Start in Docker from dockerhub
 
 ```
-docker run -d --name multisshcommander -p 8000:8080 robinpecha/dockerhub:multisshcommander
+docker run -d --name multisshcommander -p 8080:8080 robinpecha/dockerhub:multisshcommander
 ```
 
 Then open http://localhost:8080/ in your browser
