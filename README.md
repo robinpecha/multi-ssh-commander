@@ -1,12 +1,11 @@
 # multi-ssh-commander
 A tool that allows you to run commands sequentially on specified ssh targets. Simple python script with a web interface.
 
+<ins>**THIS IS AN UNSTABLE DEVELOPMENT VERSION, USE IT AT YOUR OWN RISK.**</ins>
+>I strongly recommend opening a side panel with logs to monitor whole process. HTML listing at the bottom can be not so accurate.
 
-**This is just an unstable development version, you use your own risk.**
->I strongly recommend opening a side panel with logs and finding out what happens, HTML listing at the bottom can be not accurate.
 
 
-<!-- Demo at: https://multi-ssh-commander.fly.dev !!! ALL IPS ARE STORED IN PUBLICLY ACCESSIBLE LOG, DO NOT USE FOR REAL CONNECTIONS, USE AT YOUR OWN RISK !!! --!>
 
 ![screenshot](screenshot.png)
 
