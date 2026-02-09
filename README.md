@@ -5,6 +5,7 @@ A tool that allows you to run commands sequentially on specified ssh targets. Si
 - Execute commands on multiple SSH hosts sequentially
 - Support for both **password** and **SSH key** authentication
 - Upload SSH keys or use existing ones from filesystem
+- **Per-host custom port specification** (e.g., `192.168.1.1:2222`)
 - Real-time output streaming
 - Connection logging and monitoring
 
@@ -82,3 +83,51 @@ Select "SSH Key" from the authentication method dropdown. You have three options
 If your private key is encrypted, enter the passphrase in the "Key Passphrase" field.
 
 **Security Note**: Uploaded keys are stored on the server. For production use, consider using key paths or mounting keys via Docker volumes instead of uploading.
+
+## Host Configuration
+
+### Default SSH Port
+The "Default SSH port" field sets the port for all hosts. This is typically `22` but can be changed (e.g., to `11111`) to apply to all listed hosts.
+
+### Per-Host Custom Ports
+You can override the default port for specific hosts by using the `host:port` format in the hosts list:
+
+```
+192.168.1.1
+192.168.1.2:2222
+example.com:11111
+10.0.0.5
+```
+
+In this example:
+- `192.168.1.1` and `10.0.0.5` will use the default port
+- `192.168.1.2` will use port `2222`
+- `example.com` will use port `11111`
+
+
+### UN-LICENSE
+
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <https://unlicense.org>

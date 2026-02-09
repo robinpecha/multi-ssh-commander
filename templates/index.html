@@ -41,7 +41,7 @@
                 <input type="password" id="key_passphrase" name="key_passphrase" value="{{ form_data.key_passphrase }}" placeholder="Optional"><br>
             </div>
             
-            <label for="port">SSH port:</label>
+            <label for="port">Default SSH port:</label>
             <input type="number" id="port" name="port" value="{{ form_data.port }}" required><br>
             
             <label for="timeout">Connection timeout (seconds):</label>
@@ -51,7 +51,8 @@
             <textarea id="command" name="command" rows="5" required>{{ form_data.command }}</textarea><br>
 
             <label for="ips">SSH HOSTS (IPs or hostnames, one per line):</label><br>
-            <textarea id="ips" name="ips" rows="5" required>{{ form_data.ips }}</textarea><br>
+            <small style="color: #666; margin-bottom: 5px; display: block;">💡 You can specify custom port per host: 192.168.1.1:2222</small>
+            <textarea id="ips" name="ips" rows="5" required placeholder="192.168.1.1&#10;192.168.1.2:2222&#10;example.com:11111">{{ form_data.ips }}</textarea><br>
             
             <input type="submit" value="Run !">
         </form>

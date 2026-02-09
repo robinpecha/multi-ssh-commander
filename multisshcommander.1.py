@@ -48,23 +48,6 @@ default_values = {
     'key_passphrase': ''
 }
 
-def parse_host_port(host_string, default_port):
-    """Parse host:port string. Returns (host, port) tuple.
-    If no port specified, returns default_port.
-    Examples: 
-      '192.168.1.1:2222' -> ('192.168.1.1', 2222)
-      '192.168.1.1' -> ('192.168.1.1', 22)
-      'example.com:11111' -> ('example.com', 11111)
-    """
-    if ':' in host_string:
-        parts = host_string.rsplit(':', 1)
-        try:
-            return parts[0], int(parts[1])
-        except ValueError:
-            # Invalid port number, use default
-            return host_string, default_port
-    return host_string, default_port
-
 @app.route('/stream')
 def stream():
     def generate():
@@ -102,12 +85,9 @@ def index():
             'key_passphrase': request.form.get('key_passphrase', '')
         }
 
-        def process_ssh(host_string):
-            # Parse host and port (host:port or just host)
-            ip, port = parse_host_port(host_string, form_data['port'])
-            
+        def process_ssh(ip):
             logging.info("")  # Log an empty line before each connection
-            logging.info(f"Connecting to {ip}:{port}...")
+            logging.info(f"Connecting to {ip}...")
             client = paramiko.SSHClient()
             
             # Load known hosts if file exists
@@ -120,14 +100,12 @@ def index():
             start_time = time.time()
             try:
                 # Get remote server's key
-                transport = paramiko.Transport((ip, port))
+                transport = paramiko.Transport((ip, form_data['port']))
                 transport.start_client()
                 remote_key = transport.get_remote_server_key()
                 
-                # Save the key with proper hostname format
-                # For non-standard ports, use [hostname]:port format
-                hostname_for_key = f"[{ip}]:{port}" if port != 22 else ip
-                client._host_keys.add(hostname_for_key, remote_key.get_name(), remote_key)
+                # Save the key
+                client._host_keys.add(ip, remote_key.get_name(), remote_key)
                 
                 # Save to known_hosts file
                 client.save_host_keys(known_hosts_path)
@@ -138,7 +116,7 @@ def index():
                 connect_kwargs = {
                     'hostname': ip,
                     'username': form_data['username'],
-                    'port': port,
+                    'port': form_data['port'],
                     'timeout': form_data['timeout']
                 }
                 
@@ -164,26 +142,24 @@ def index():
                 
                 client.connect(**connect_kwargs)
                 
-                logging.info(f"Connected to {ip}:{port}, executing command...")
+                logging.info(f"Connected to {ip}, executing command...")
                 stdin, stdout, stderr = client.exec_command(form_data['command'])
                 output = stdout.read().decode()
                 response_time = round(time.time() - start_time, 2)
                 error = None
-                logging.info(f"Command execution completed on {ip}:{port} in {response_time} seconds")
+                logging.info(f"Command execution completed on {ip} in {response_time} seconds")
                 
             except Exception as e:
                 response_time = round(time.time() - start_time, 2)
                 output = None
                 error = str(e)
-                logging.error(f"Error on {ip}:{port}: {error}")
+                logging.error(f"Error on {ip}: {error}")
             
             finally:
                 client.close()
             
-            # Display host:port if non-standard port
-            display_host = f"{ip}:{port}" if port != 22 else ip
             results_queue.put({
-                'ip': display_host,
+                'ip': ip,
                 'response': response_time,
                 'output': output,
                 'error': error
