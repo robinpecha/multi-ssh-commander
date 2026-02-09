@@ -5,9 +5,16 @@ import time
 import json
 from queue import Queue
 import os
+from werkzeug.utils import secure_filename
 
 # Initialize Flask app
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['UPLOAD_FOLDER'] = os.path.join(os.path.expanduser('~/.ssh'), 'uploaded_keys')
+
+# Ensure upload folder exists
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'], mode=0o700)
 
 # Initialize queue for results
 results_queue = Queue()
@@ -35,7 +42,10 @@ default_values = {
     'port': 22,
     'command': '/system/identity/print',
     'ips': '',
-    'timeout': 3
+    'timeout': 3,
+    'auth_method': 'password',
+    'key_path': '',
+    'key_passphrase': ''
 }
 
 @app.route('/stream')
@@ -50,13 +60,29 @@ def stream():
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
+        auth_method = request.form.get('auth_method', 'password')
+        key_path = request.form.get('key_path', '')
+        
+        # Handle file upload if key auth and file uploaded
+        if auth_method == 'key' and 'key_file' in request.files:
+            key_file = request.files['key_file']
+            if key_file.filename:
+                filename = secure_filename(key_file.filename)
+                key_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                key_file.save(key_path)
+                os.chmod(key_path, 0o600)  # Set proper permissions
+                logging.info(f"Key file uploaded: {key_path}")
+        
         form_data = {
             'username': request.form.get('username'),
             'password': request.form.get('password'),
             'port': int(request.form.get('port')),
             'command': request.form.get('command'),
             'ips': request.form.get('ips'),
-            'timeout': int(request.form.get('timeout', default_values['timeout']))
+            'timeout': int(request.form.get('timeout', default_values['timeout'])),
+            'auth_method': auth_method,
+            'key_path': key_path,
+            'key_passphrase': request.form.get('key_passphrase', '')
         }
 
         def process_ssh(ip):
@@ -87,13 +113,34 @@ def index():
                 transport.close()
                 
                 # Now connect with verified key
-                client.connect(
-                    ip,
-                    username=form_data['username'],
-                    password=form_data['password'],
-                    port=form_data['port'],
-                    timeout=form_data['timeout']
-                )
+                connect_kwargs = {
+                    'hostname': ip,
+                    'username': form_data['username'],
+                    'port': form_data['port'],
+                    'timeout': form_data['timeout']
+                }
+                
+                # Add authentication method
+                if form_data['auth_method'] == 'password':
+                    connect_kwargs['password'] = form_data['password']
+                    logging.info(f"Using password authentication for {ip}")
+                elif form_data['auth_method'] == 'key':
+                    if form_data['key_path']:
+                        # Expand path for ~ or environment variables
+                        key_path = os.path.expanduser(form_data['key_path'])
+                        if os.path.exists(key_path):
+                            connect_kwargs['key_filename'] = key_path
+                            if form_data['key_passphrase']:
+                                connect_kwargs['passphrase'] = form_data['key_passphrase']
+                            logging.info(f"Using key authentication for {ip} with key: {key_path}")
+                        else:
+                            raise Exception(f"Key file not found: {key_path}")
+                    else:
+                        # Try default keys in ~/.ssh/
+                        connect_kwargs['look_for_keys'] = True
+                        logging.info(f"Using default SSH keys for {ip}")
+                
+                client.connect(**connect_kwargs)
                 
                 logging.info(f"Connected to {ip}, executing command...")
                 stdin, stdout, stderr = client.exec_command(form_data['command'])

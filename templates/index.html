@@ -14,13 +14,32 @@
             <button class="refresh-button" onclick="refreshLogContent()">Refresh Logs</button>
             <button class="refresh-button" onclick="window.open('/static/log.txt', '_blank');">Open log file</button>
         </div>
-        <form method="POST" class="form">
+        <form method="POST" class="form" enctype="multipart/form-data">
             <h1 class="header">MULTI SSH COMMANDER - WEB UI</h1>
             <label for="username">SSH username:</label>
             <input type="text" id="username" name="username" value="{{ form_data.username }}" required><br>
             
-            <label for="password">SSH password:</label>
-            <input type="password" id="password" name="password" value="{{ form_data.password }}" required><br>
+            <label for="auth_method">Authentication Method:</label>
+            <select id="auth_method" name="auth_method" onchange="toggleAuthFields()" required>
+                <option value="password" {% if form_data.auth_method == 'password' %}selected{% endif %}>Password</option>
+                <option value="key" {% if form_data.auth_method == 'key' %}selected{% endif %}>SSH Key</option>
+            </select><br>
+            
+            <div id="password_fields">
+                <label for="password">SSH password:</label>
+                <input type="password" id="password" name="password" value="{{ form_data.password }}"><br>
+            </div>
+            
+            <div id="key_fields" style="display:none;">
+                <label for="key_path">SSH Key Path (e.g., ~/.ssh/id_rsa):</label>
+                <input type="text" id="key_path" name="key_path" value="{{ form_data.key_path }}" placeholder="Leave empty to use default keys"><br>
+                
+                <label for="key_file">Or Upload Key File:</label>
+                <input type="file" id="key_file" name="key_file" accept=".pem,.key,*"><br>
+                
+                <label for="key_passphrase">Key Passphrase (if encrypted):</label>
+                <input type="password" id="key_passphrase" name="key_passphrase" value="{{ form_data.key_passphrase }}" placeholder="Optional"><br>
+            </div>
             
             <label for="port">SSH port:</label>
             <input type="number" id="port" name="port" value="{{ form_data.port }}" required><br>
@@ -57,6 +76,28 @@
     </div>
 
     <script>
+        function toggleAuthFields() {
+            const authMethod = document.getElementById('auth_method').value;
+            const passwordFields = document.getElementById('password_fields');
+            const keyFields = document.getElementById('key_fields');
+            const passwordInput = document.getElementById('password');
+            
+            if (authMethod === 'password') {
+                passwordFields.style.display = 'block';
+                keyFields.style.display = 'none';
+                passwordInput.required = true;
+            } else {
+                passwordFields.style.display = 'none';
+                keyFields.style.display = 'block';
+                passwordInput.required = false;
+            }
+        }
+        
+        // Initialize on page load
+        window.onload = function() {
+            toggleAuthFields();
+        };
+        
         function toggleLog() {
             const logContainer = document.getElementById('logContainer');
             if (logContainer.style.display === 'none' || logContainer.style.display === '') {
