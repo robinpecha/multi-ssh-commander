@@ -1,5 +1,5 @@
 #docker rm multissh-webui --force
 #docker rmi multissh-webui --force
-docker build -t multisshcommander .
-docker compose up -d 
+# docker build -t multisshcommander .
+docker compose up -d --force-recreate --build
 

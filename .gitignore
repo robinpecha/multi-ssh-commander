@@ -1,1 +1,3 @@
 .gitignored
+multisshcommander.*.py
+log.txt

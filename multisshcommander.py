@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, Response
+from flask import Flask, render_template, request, Response, send_from_directory
 import paramiko
 import logging
 import time
@@ -7,8 +7,8 @@ from queue import Queue
 import os
 from werkzeug.utils import secure_filename
 
-# Initialize Flask app
-app = Flask(__name__)
+# Initialize Flask app - use current directory for templates
+app = Flask(__name__, template_folder='.')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.expanduser('~/.ssh'), 'uploaded_keys')
 
@@ -24,7 +24,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('static/log.txt'),
+        logging.FileHandler('log.txt'),
         logging.StreamHandler()
     ]
 )
@@ -73,6 +73,14 @@ def stream():
                 result = results_queue.get()
                 yield f"data: {json.dumps(result)}\n\n"
     return Response(generate(), mimetype='text/event-stream')
+
+@app.route('/styles.css')
+def serve_css():
+    return send_from_directory('.', 'styles.css')
+
+@app.route('/log.txt')
+def serve_log():
+    return send_from_directory('.', 'log.txt')
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
